@@ -84,6 +84,8 @@ class TransformerEncoder(Model):
         self.dropout = nn.Dropout(dropout)
         self.scale = torch.sqrt(torch.FloatTensor([hid_dim])).to(device)
         self.pad_idx = pad_idx
+        # 全连接层
+        self.fc = nn.Linear(self.max_length * self.hid_dim, self.n_class)
     
     def mask_src_mask(self, src):
         # src = [batch_size, src_len]
@@ -107,8 +109,10 @@ class TransformerEncoder(Model):
         for layer in self.layers:
             src = layer(src, src_mask)
         # src = [batch_size, src_len, hid_dim]
-            
-        return src
+        src = src.view(batch_size, -1)
+        # src = [batch_size, src_len * hid_dim]
+        out = self.fc(src)    
+        return out
 
 
 class EncoderLayer(nn.Module):
