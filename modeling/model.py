@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from modeling.config import *
+from modeling.config import textcnn, transformer
 
 class Model(nn.Module):
     def __init__(self, vocab_size):
@@ -85,9 +85,9 @@ class TransformerEncoder(Model):
         self.scale = torch.sqrt(torch.FloatTensor([hid_dim])).to(device)
         self.pad_idx = pad_idx
         # 全连接层
-        self.fc = nn.Linear(self.max_length * self.hid_dim, self.n_class)
+        self.fc = nn.Linear(max_length * hid_dim, self.n_class)
     
-    def mask_src_mask(self, src):
+    def make_src_mask(self, src):
         # src = [batch_size, src_len]
         src_mask = (src != self.pad_idx).unsqueeze(1).unsqueeze(2)
         # src_mask = [batch_size, 1, 1, src_len]
