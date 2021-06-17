@@ -19,17 +19,17 @@ class TextCNN(Model):
         self.embedding_dim = 50
         self.drop_keep_prob = 0.5
         self.pretrained_embed = word2vec
-        self.kernel_num = kernel_num
-        self.kernel_size = kernel_size
+        self.kernel_num = textcnn.kernel_num
+        self.kernel_size = textcnn.kernel_size
 
         # 使用预训练的词向量
         self.embedding = nn.Embedding(self.vocab_size, self.embedding_dim)
-        self.embedding.weight.data.copy_(torch.from_numpy(self.pretrained_embed))
-        self.embedding.weight.requires_grad = True
+        # self.embedding.weight.data.copy_(torch.from_numpy(self.pretrained_embed))
+        # self.embedding.weight.requires_grad = True
         # 卷积层
-        self.conv1 = nn.Conv2d(1, kernel_num, (kernel_size[0], self.embedding_dim))
-        self.conv2 = nn.Conv2d(1, kernel_num, (kernel_size[1], self.embedding_dim))
-        self.conv3 = nn.Conv2d(1, kernel_num, (kernel_size[2], self.embedding_dim))
+        self.conv1 = nn.Conv2d(1, textcnn.kernel_num, (textcnn.kernel_size[0], self.embedding_dim))
+        self.conv2 = nn.Conv2d(1, textcnn.kernel_num, (textcnn.kernel_size[1], self.embedding_dim))
+        self.conv3 = nn.Conv2d(1, textcnn.kernel_num, (textcnn.kernel_size[2], self.embedding_dim))
         # Dropout
         self.dropout = nn.Dropout(self.drop_keep_prob)
         # 全连接层
@@ -85,7 +85,7 @@ class TransformerEncoder(Model):
         self.scale = torch.sqrt(torch.FloatTensor([hid_dim])).to(device)
         self.pad_idx = pad_idx
         # 全连接层
-        self.fc = nn.Linear(max_length * hid_dim, self.n_class)
+        self.fc = nn.Linear(hid_dim, self.n_class)
     
     def make_src_mask(self, src):
         # src = [batch_size, src_len]
@@ -109,8 +109,8 @@ class TransformerEncoder(Model):
         for layer in self.layers:
             src = layer(src, src_mask)
         # src = [batch_size, src_len, hid_dim]
-        src = src.view(batch_size, -1)
-        # src = [batch_size, src_len * hid_dim]
+        src = torch.mean(src, 1)
+        # src = [batch_size, hid_dim]
         out = self.fc(src)    
         return out
 

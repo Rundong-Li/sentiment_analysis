@@ -90,4 +90,4 @@ for epoch in range(1, EPOCHS + 1):
 print('[INFO]: Start Test.')
 test(model, args.model, test_dataloader)
 model_pth = model_path + 'model_' + str(time.time()) + '.pth'
-torch.save(model.state_dict(), model_pth)
+# torch.save(model.state_dict(), model_pth)
