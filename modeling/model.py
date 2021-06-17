@@ -220,14 +220,15 @@ class PositionwiseFeedforwardLayer(nn.Module):
 
         self.fc_1 = nn.Linear(hid_dim, pf_dim)
         self.fc_2 = nn.Linear(pf_dim, hid_dim)
-
+        self.gelu = nn.GELU()
         self.dropout = nn.Dropout(dropout)
         
     def forward(self, x):
         # x = [batch_size, seq_len, hid_dim]
         # x = self.dropout(torch.relu(self.fc_1(x)))
         # use GELU activation function
-        x = self.dropout(nn.GELU(self.fc_1(x)))
+
+        x = self.dropout(self.gelu(self.fc_1(x)))
         # x = [batch_size, seq_len, pf_dim]
         x = self.fc_2(x)
         # x = [batch_size, seq_len, hid_dim]
