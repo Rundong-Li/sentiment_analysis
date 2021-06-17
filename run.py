@@ -59,6 +59,7 @@ elif args.model == "transformer":
                                n_heads=n_heads,
                                pf_dim=pf_dim,
                                dropout=dropout,
+                               use_textcnn=use_textcnn,
                                device=DEVICE).to(DEVICE)
 
 """

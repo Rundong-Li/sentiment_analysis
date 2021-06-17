@@ -69,10 +69,12 @@ class TransformerEncoder(Model):
                 n_heads,   # num of head in MultiHeadAttentionLayer
                 pf_dim,    # pf: positionwise feed forward
                 dropout,
+                use_textcnn,
                 device,
                 max_length=128):
         super(TransformerEncoder, self).__init__(vocab_size)
         self.device = device
+        self.use_textcnn = use_textcnn
         self.tok_embedding = nn.Embedding(vocab_size, hid_dim)
         self.pos_embedding = nn.Embedding(max_length, hid_dim)
         self.layers = nn.ModuleList([EncoderLayer(hid_dim, 
@@ -86,6 +88,13 @@ class TransformerEncoder(Model):
         self.pad_idx = pad_idx
         # 全连接层
         self.fc = nn.Linear(hid_dim, self.n_class)
+        if self.use_textcnn:
+            # 卷积层
+            self.conv1 = nn.Conv2d(1, textcnn.kernel_num, (textcnn.kernel_size[0], hid_dim))
+            self.conv2 = nn.Conv2d(1, textcnn.kernel_num, (textcnn.kernel_size[1], hid_dim))
+            self.conv3 = nn.Conv2d(1, textcnn.kernel_num, (textcnn.kernel_size[2], hid_dim))
+            # 全连接层
+            self.fc = nn.Linear(len(textcnn.kernel_size) * textcnn.kernel_num, self.n_class)
     
     def make_src_mask(self, src):
         # src = [batch_size, src_len]
@@ -94,6 +103,17 @@ class TransformerEncoder(Model):
 
         return src_mask
     
+    @staticmethod
+    def conv_and_pool(x, conv):
+        # x: (batch, 1, sentence_length, hid_dim)
+        x = conv(x)
+        # x: (batch, kernel_num, H_out, 1)
+        x = F.relu(x.squeeze(3))
+        # x: (batch, kernel_num, H_out)
+        x = F.max_pool1d(x, x.size(2)).squeeze(2)
+        #  (batch, kernel_num)
+        return x
+
     def forward(self, src):
         # src = [batch_size, src_len]
         src_mask = self.make_src_mask(src)
@@ -109,10 +129,22 @@ class TransformerEncoder(Model):
         for layer in self.layers:
             src = layer(src, src_mask)
         # src = [batch_size, src_len, hid_dim]
-        src = torch.mean(src, 1)
-        # src = [batch_size, hid_dim]
-        out = self.fc(src)    
-        return out
+        if self.use_textcnn:
+            x = src.unsqueeze(1)
+            x1 = self.conv_and_pool(x, self.conv1)  # (batch, kernel_num)
+            x2 = self.conv_and_pool(x, self.conv2)  # (batch, kernel_num)
+            x3 = self.conv_and_pool(x, self.conv3)  # (batch, kernel_num)
+            x = torch.cat((x1, x2, x3), 1)  # (batch, 3 * kernel_num)
+            x = self.dropout(x)
+            x = self.fc(x)
+            x = F.log_softmax(x, dim=1)
+        else: 
+            x = torch.mean(src, 1)
+            # src = [batch_size, hid_dim]
+            x = self.dropout(x)
+            x = self.fc(x)
+            x = F.log_softmax(x, dim=1)    
+        return x
 
 
 class EncoderLayer(nn.Module):
@@ -264,7 +296,7 @@ def train(model, model_name, dataloader, epoch, optimizer, criterion, scheduler)
     train_loss *= BATCH_SIZE
     train_loss /= len(dataloader.dataset)
     train_acc = correct / count
-    print('\ntrain epoch: {}\taverage loss: {:.6f}\taccuracy:{:.4f}%\n'.format(epoch, train_loss, 100. * train_acc))
+    print('train epoch: {}\taverage loss: {:.6f}\taccuracy:{:.4f}%'.format(epoch, train_loss, 100. * train_acc))
     scheduler.step()
 
     return train_loss, train_acc
@@ -292,7 +324,7 @@ def validation(model, model_name, dataloader, epoch, criterion):
     val_acc = correct / count
     # 打印准确率
     print(
-        'validation:train epoch: {}\taverage loss: {:.6f}\t accuracy:{:.2f}%\n'.format(epoch, val_loss, 100 * val_acc))
+        'validation:train epoch: {}\taverage loss: {:.6f}\t accuracy:{:.2f}%'.format(epoch, val_loss, 100 * val_acc))
 
     return val_loss, val_acc
 
