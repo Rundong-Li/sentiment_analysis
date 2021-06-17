@@ -1,6 +1,4 @@
 import torch
-
-Data_Path = "/home/yangz/sentiment_analyse"
 learning_rate = 0.01  # 学习率
 BATCH_SIZE = 512  # 训练批量
 EPOCHS = 2  # 训练轮数

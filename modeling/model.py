@@ -1,9 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
 from modeling.config import *
-
 
 class Model(nn.Module):
     def __init__(self, vocab_size):
@@ -65,13 +63,14 @@ class TextCNN(Model):
 class TransformerEncoder(Model):
     def __init__(self, 
                 vocab_size, 
+                pad_idx,
                 hid_dim,   # embedding之后词向量的维度
                 n_layers,  # num of EncoderLayer
                 n_heads,   # num of head in MultiHeadAttentionLayer
                 pf_dim,    # pf: positionwise feed forward
                 dropout,
                 device,
-                max_length = 100):
+                max_length=128):
         super(TransformerEncoder, self).__init__(vocab_size)
         self.device = device
         self.tok_embedding = nn.Embedding(vocab_size, hid_dim)
@@ -84,9 +83,18 @@ class TransformerEncoder(Model):
                                      for _ in range(n_layers)])
         self.dropout = nn.Dropout(dropout)
         self.scale = torch.sqrt(torch.FloatTensor([hid_dim])).to(device)
-        
-    def forward(self, src, src_mask):
+        self.pad_idx = pad_idx
+    
+    def mask_src_mask(self, src):
         # src = [batch_size, src_len]
+        src_mask = (src != self.pad_idx).unsqueeze(1).unsqueeze(2)
+        # src_mask = [batch_size, 1, 1, src_len]
+
+        return src_mask
+    
+    def forward(self, src):
+        # src = [batch_size, src_len]
+        src_mask = self.make_src_mask(src)
         # src_mask = [batch_size, 1, 1, src_len]
         batch_size = src.shape[0]
         src_len = src.shape[1]
@@ -223,7 +231,11 @@ class PositionwiseFeedforwardLayer(nn.Module):
         return x
 
 
-def train(model, dataloader, epoch, optimizer, criterion, scheduler):
+def train(model, model_name, dataloader, epoch, optimizer, criterion, scheduler):
+    if model_name == "textcnn":
+        BATCH_SIZE, DEVICE = textcnn.BATCH_SIZE, textcnn.DEVICE
+    elif model_name == "transformer":
+        BATCH_SIZE, DEVICE = transformer.BATCH_SIZE, transformer.DEVICE
     # 定义训练过程
     train_loss, train_acc = 0.0, 0.0
     count, correct = 0, 0
@@ -253,7 +265,11 @@ def train(model, dataloader, epoch, optimizer, criterion, scheduler):
     return train_loss, train_acc
 
 
-def validation(model, dataloader, epoch, criterion):
+def validation(model, model_name, dataloader, epoch, criterion):
+    if model_name == "textcnn":
+        BATCH_SIZE, DEVICE = textcnn.BATCH_SIZE, textcnn.DEVICE
+    elif model_name == "transformer":
+        BATCH_SIZE, DEVICE = transformer.BATCH_SIZE, transformer.DEVICE
     model.eval()
     # 验证过程
     val_loss, val_acc = 0.0, 0.0
@@ -276,7 +292,11 @@ def validation(model, dataloader, epoch, criterion):
     return val_loss, val_acc
 
 
-def test(model, dataloader):
+def test(model, model_name, dataloader):
+    if model_name == "textcnn":
+        DEVICE = textcnn.DEVICE
+    elif model_name == "transformer":
+        DEVICE = transformer.DEVICE
     model.eval()
     model.to(DEVICE)
 
