@@ -1,1 +1,1 @@
-python run.py --model textcnn
+python run.py --model transformer

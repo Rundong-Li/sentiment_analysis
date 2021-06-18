@@ -1,0 +1,74 @@
+[INFO]: Vocabulary consists 20000 words.
+[INFO]: Train Set Info.
+Total sample num：37663
+class num：
+0 18747
+1 18916
+[INFO]: Valid Set Info.
+Total sample num：12554
+class num：
+1 6407
+0 6147
+[INFO]: Test Set Info.
+Total sample num：12555
+class num：
+1 6405
+0 6150
+[INFO]: Build Model: transformer
+
+-------------------------- hyperparameters --------------------------------
+learning_rate = 0.001 # 学习率
+BATCH_SIZE = 128  # 训练批量
+EPOCHS = 20  # 训练轮数
+vocab_size = 20000  # 词汇表大小
+hid_dim = 200  # embedding层隐向量维度
+n_layers = 4   # EncoderLayer层数
+n_heads = 8   # 多头自注意力head数
+pf_dim = 256   # PositionwiseFeedFoward中间层的维度
+dropout = 0.5  # dropout层
+use_textcnn = False # 在transformer的输出上接上textcnn
+
+
+----------------- [INFO]: Start Train and valid ------------------
+train epoch: 1	average loss: 0.485165	accuracy:76.8075%
+validation:train epoch: 1	average loss: 0.491082	 accuracy:83.19%
+train epoch: 2	average loss: 0.328534	accuracy:86.3925%
+validation:train epoch: 2	average loss: 0.341427	 accuracy:85.60%
+train epoch: 3	average loss: 0.275067	accuracy:88.9175%
+validation:train epoch: 3	average loss: 0.304355	 accuracy:87.80%
+train epoch: 4	average loss: 0.250389	accuracy:90.0964%
+validation:train epoch: 4	average loss: 0.320267	 accuracy:87.73%
+train epoch: 5	average loss: 0.234190	accuracy:91.0310%
+validation:train epoch: 5	average loss: 0.282541	 accuracy:88.97%
+train epoch: 6	average loss: 0.168565	accuracy:93.7950%
+validation:train epoch: 6	average loss: 0.281781	 accuracy:89.68%
+train epoch: 7	average loss: 0.124964	accuracy:95.7943%
+validation:train epoch: 7	average loss: 0.303353	 accuracy:89.48%
+train epoch: 8	average loss: 0.095628	accuracy:96.9413%
+validation:train epoch: 8	average loss: 0.332257	 accuracy:89.37%
+train epoch: 9	average loss: 0.072474	accuracy:97.8440%
+validation:train epoch: 9	average loss: 0.375627	 accuracy:89.29%
+train epoch: 10	average loss: 0.057189	accuracy:98.3007%
+validation:train epoch: 10	average loss: 0.415205	 accuracy:88.94%
+train epoch: 11	average loss: 0.039428	accuracy:99.0176%
+validation:train epoch: 11	average loss: 0.439677	 accuracy:89.16%
+train epoch: 12	average loss: 0.030615	accuracy:99.2884%
+validation:train epoch: 12	average loss: 0.458420	 accuracy:89.02%
+train epoch: 13	average loss: 0.026631	accuracy:99.4106%
+validation:train epoch: 13	average loss: 0.483804	 accuracy:89.10%
+train epoch: 14	average loss: 0.024100	accuracy:99.4663%
+validation:train epoch: 14	average loss: 0.501926	 accuracy:89.02%
+train epoch: 15	average loss: 0.021602	accuracy:99.5460%
+validation:train epoch: 15	average loss: 0.528841	 accuracy:88.96%
+train epoch: 16	average loss: 0.019604	accuracy:99.5566%
+validation:train epoch: 16	average loss: 0.521326	 accuracy:88.97%
+train epoch: 17	average loss: 0.019331	accuracy:99.5566%
+validation:train epoch: 17	average loss: 0.523498	 accuracy:88.95%
+train epoch: 18	average loss: 0.019071	accuracy:99.5646%
+validation:train epoch: 18	average loss: 0.531471	 accuracy:88.97%
+train epoch: 19	average loss: 0.018815	accuracy:99.5646%
+validation:train epoch: 19	average loss: 0.526222	 accuracy:88.97%
+train epoch: 20	average loss: 0.018575	accuracy:99.5752%
+validation:train epoch: 20	average loss: 0.539067	 accuracy:88.98%
+------------------ [INFO]: Start Test ------------------------
+test accuracy:89.32%.

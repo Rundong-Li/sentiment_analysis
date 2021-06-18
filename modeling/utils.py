@@ -103,3 +103,13 @@ def load_corpus(path, word2id, max_sen_len=128):
     labels = np.array([cat2id[l] for l in labels])
 
     return contents, labels
+
+
+def print_hyper_params(model_name):
+    num_line = len(open('./modeling/config/'+model_name+'.py','r').readlines())
+    with open('./modeling/config/'+model_name+'.py') as f:
+        for i in range(num_line):
+            line = f.readline().rstrip('\n')
+            if i >= 5:
+                print(line)
+        f.close()

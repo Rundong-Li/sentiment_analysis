@@ -6,7 +6,7 @@ from torch.optim.lr_scheduler import *
 from torch.utils.data import TensorDataset, DataLoader
 
 from modeling.model import TextCNN, TransformerEncoder, train, validation, test
-from modeling.utils import build_word2id, build_word2vec, load_corpus
+from modeling.utils import build_word2id, build_word2vec, load_corpus, print_hyper_params
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--model", type=str, help="model name")
@@ -48,10 +48,11 @@ test_dataloader = DataLoader(dataset=test_dataset, batch_size=BATCH_SIZE,
 
 # build model
 word2vec = build_word2vec('./dataset/wiki_word2vec_50.bin', word2id)
-print(f'[INFO]: Build Model: {args.model}')
 if args.model == "textcnn":
+    print(f'[INFO]: Build Model: {args.model}')
     model = TextCNN(vocab_size, word2vec).to(DEVICE)
 elif args.model == "transformer":
+    print(f'[INFO]: Build Model: {args.model}+textcnn' if use_textcnn else f'[INFO]: Build Model: {args.model}')
     model = TransformerEncoder(vocab_size=vocab_size,
                                pad_idx=padding_idx,
                                hid_dim=hid_dim,
@@ -74,21 +75,28 @@ optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 criterion = nn.CrossEntropyLoss()
 scheduler = StepLR(optimizer, step_size=5)
 
+print('\n-------------------------- hyperparameters --------------------------------')
+print_hyper_params(args.model)
+print('\n')
+
 train_losses = []
 train_acces = []
 val_losses = []
 val_acces = []
+best_val_acc = 0
+best_model_pth = model_path + args.model + '_best.pth'
 
-print('[INFO]: Start Train and valid.')
+print('----------------- [INFO]: Start Train and valid ------------------')
 for epoch in range(1, EPOCHS + 1):
     tr_loss, tr_acc = train(model, args.model, train_dataloader, epoch, optimizer, criterion, scheduler)
     val_loss, val_acc = validation(model, args.model, val_dataloader, epoch, criterion)
+    if val_acc > best_val_acc:
+        best_val_acc = val_acc
+        torch.save(model.state_dict(), best_model_pth)
     train_losses.append(tr_loss)
     train_acces.append(tr_acc)
     val_losses.append(val_loss)
     val_acces.append(val_acc)
 
-print('[INFO]: Start Test.')
-test(model, args.model, test_dataloader)
-model_pth = model_path + 'model_' + str(time.time()) + '.pth'
-# torch.save(model.state_dict(), model_pth)
+print('------------------ [INFO]: Start Test ------------------------')
+test(model, args.model, best_model_pth, test_dataloader)

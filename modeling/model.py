@@ -329,11 +329,12 @@ def validation(model, model_name, dataloader, epoch, criterion):
     return val_loss, val_acc
 
 
-def test(model, model_name, dataloader):
+def test(model, model_name, best_model_pth, dataloader):
     if model_name == "textcnn":
         DEVICE = textcnn.DEVICE
     elif model_name == "transformer":
         DEVICE = transformer.DEVICE
+    model.load_state_dict(torch.load(best_model_pth))
     model.eval()
     model.to(DEVICE)
 

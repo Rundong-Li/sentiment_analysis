@@ -30,9 +30,11 @@ print('[Preprocess]: we have {} examples.'.format(df_new.shape[0]))
 
 # 划分训练验证集测试集
 df_new = df_new.reindex(np.random.permutation(df_new.index))  # 打乱顺序
-df_train = df_new[0:50000]
-df_valid = df_new[50000:]
-df_test = df_new[50000:]
+total_len = len(df_new)
+# 按6:2:2划分验证集测试集
+df_train = df_new[0:int(0.6*total_len)]
+df_valid = df_new[int(0.6*total_len):int(0.8*total_len)]
+df_test = df_new[int(0.8*total_len):]
 print('[Preprocess]: train set contains {} examples.'.format(df_train.shape[0]))
 print('[Preprocess]: valid set contains {} examples.'.format(df_valid.shape[0]))
 print('[Preprocess]: test set contains {} examples.'.format(df_test.shape[0]))
