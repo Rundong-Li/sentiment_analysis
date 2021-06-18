@@ -1,7 +1,7 @@
 import torch
 learning_rate = 0.001  # 学习率
 BATCH_SIZE = 512  # 训练批量
-EPOCHS = 10  # 训练轮数
+EPOCHS = 20  # 训练轮数
 model_path = "./saved_models/"  # 预训练模型路径
 DEVICE = torch.device('cuda:2' if torch.cuda.is_available() else 'cpu')
 update_w2v = True  # 是否在训练中更新w2v
